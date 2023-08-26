@@ -46,19 +46,21 @@ def get_best(query, K=3):
     distances = cdist(query_embedding, faq_embeddings, "cosine")[0]
     ind = np.argsort(distances, axis=0)
     print("\n" + query)
-
+    text =""
     regression = ms.order_with_like(list(zip(distances[ind], ind)))
-
     for c, i in regression[:K]:
-        if c > 0.03:
-            return "Не знаю ответа"
         question = simplify_text(question_dataset[i])
         answer = simplify_text(answer_dataset.loc[i])
         print(c, question, answer)
-        text = f'''Вопрос: {question}?  Ответ: {answer}'''
-        prompt = '''<SC6>Текст: {}\nВопрос: {}\nОтвет: <extra_id_0>'''.format(text, query)
-        result = generate(prompt)
-        return result
+        if c > 0.1:
+            continue
+        text +=  f'''Вопрос: {question}\nОтвет: {answer}\n'''
+
+    if text == "":
+        return "Не знаю ответа"
+    prompt = '''<SC6>Текст: {}\nВопрос: {}\nОтвет: <extra_id_0>'''.format(text.strip(), query)
+    result = generate(prompt)
+    return result
 
 
 # device = torch.cuda.current_device() if torch.cuda.is_available() and torch.cuda.mem_get_info()[0] >= 2*1024**3 else -1
@@ -80,6 +82,15 @@ if os.path.exists('config.ini'):
         skipAiTraining = True
 
 # device = torch.device("cpu")
+generation_config = GenerationConfig.from_pretrained("Den4ikAI/FRED-T5-LARGE_text_qa")
+tokenizer = AutoTokenizer.from_pretrained("Den4ikAI/FRED-T5-LARGE_text_qa")
+fred_t5_large = AutoModelForSeq2SeqLM.from_pretrained("Den4ikAI/FRED-T5-LARGE_text_qa").to(device)
+fred_t5_large.eval()
+question_dataset = pd.read_excel('train_dataset_Датасет.xlsx', 'Лист1')['QUESTION'].astype(str).tolist()  # [:-50]
+answer_dataset = pd.read_excel('train_dataset_Датасет.xlsx', 'Лист1')['ANSWER'].astype(str)
+model = SentenceTransformer('intfloat/multilingual-e5-large', device=device)
+#model = SentenceTransformer('sentence-transformers/quora-distilbert-multilingual', device=device)
+faq_embeddings = model.encode(question_dataset, normalize_embeddings=True)
 
 
 generation_config = None
@@ -130,7 +141,7 @@ async def upload_dataset(file: UploadFile):
 
 @app.post("/answering")
 async def qa(input_data: QADataModel):
-    result = process_query(input_data.question)
+    result = process_query((input_data.question+"?").replace("??", "?"))
     return {"answer": result}
 
 
