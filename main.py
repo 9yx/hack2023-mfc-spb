@@ -81,8 +81,8 @@ def get_best(query, K=3):
 
 
 # device = torch.cuda.current_device() if torch.cuda.is_available() and torch.cuda.mem_get_info()[0] >= 2*1024**3 else -1
-#device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
-device = torch.device("cpu")
+device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
+#device = torch.device("cpu")
 
 skipAiTraining = False
 # Проверка существования файла
@@ -152,8 +152,12 @@ async def upload_dataset(file: UploadFile):
 
 @app.post("/answering")
 async def qa(input_data: QADataModel):
-    result = process_query((input_data.question + "?").replace("??", "?"))
-    return {"index": str(result[0]), "answer": result[1]}
+    try:
+        result = process_query((input_data.question + "?").replace("??", "?"))
+        return {"index": str(result[0]), "answer": result[1]}
+    finally:
+        torch.cuda.empty_cache()
+
 
 
 class AnswerScoreDto(BaseModel):
