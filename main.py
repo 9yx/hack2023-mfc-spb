@@ -10,7 +10,8 @@ from fastapi import FastAPI
 from pydantic import BaseModel
 
 if __name__ == '__main__':
-    uvicorn.run('main:app', workers=1, host="0.0.0.0",  port=9000)
+    uvicorn.run('main:app', workers=1, host="0.0.0.0", port=9000)
+
 
 def generate(prompt):
     data = tokenizer(f"{prompt}", return_tensors="pt").to(model.device)
@@ -25,15 +26,15 @@ def generate(prompt):
 def simplify_text(text):
     text = text.lower()
 
-    #remove_extra_spaces
+    # remove_extra_spaces
     text = " ".join(text.split())
-    #line break to spaces
+    # line break to spaces
     text = text.replace("\n", " ")
 
     text = text.replace(";", ",")
     text = text.replace("- ", "-")
 
-    #punctuation simplifier
+    # punctuation simplifier
     # translation_table = str.maketrans("", "", string.punctuation.replace("-", ""))
     return text
 
@@ -43,16 +44,20 @@ def get_best(query, K=3):
     distances = cdist(query_embedding, faq_embeddings, "cosine")[0]
     ind = np.argsort(distances, axis=0)
     print("\n" + query)
+    text =""
     for c, i in list(zip(distances[ind], ind))[:K]:
-        if c > 0.03:
-            return "Не знаю ответа"
         question = simplify_text(question_dataset[i])
-        answer =simplify_text(answer_dataset.loc[i])
+        answer = simplify_text(answer_dataset.loc[i])
         print(c, question, answer)
-        text = f'''Вопрос: {question}?  Ответ: {answer}'''
-        prompt = '''<SC6>Текст: {}\nВопрос: {}\nОтвет: <extra_id_0>'''.format(text, query)
-        result = generate(prompt)
-        return result
+        if c > 0.1:
+            continue
+        text +=  f'''Вопрос: {question}\nОтвет: {answer}\n'''
+
+    if text == "":
+        return "Не знаю ответа"
+    prompt = '''<SC6>Текст: {}\nВопрос: {}\nОтвет: <extra_id_0>'''.format(text.strip(), query)
+    result = generate(prompt)
+    return result
 
 
 # device = torch.cuda.current_device() if torch.cuda.is_available() and torch.cuda.mem_get_info()[0] >= 2*1024**3 else -1
@@ -64,8 +69,8 @@ fred_t5_large = AutoModelForSeq2SeqLM.from_pretrained("Den4ikAI/FRED-T5-LARGE_te
 fred_t5_large.eval()
 question_dataset = pd.read_excel('train_dataset_Датасет.xlsx', 'Лист1')['QUESTION'].astype(str).tolist()  # [:-50]
 answer_dataset = pd.read_excel('train_dataset_Датасет.xlsx', 'Лист1')['ANSWER'].astype(str)
-# model = SentenceTransformer('intfloat/multilingual-e5-large', device=device)
-model = SentenceTransformer('sentence-transformers/quora-distilbert-multilingual', device=device)
+model = SentenceTransformer('intfloat/multilingual-e5-large', device=device)
+#model = SentenceTransformer('sentence-transformers/quora-distilbert-multilingual', device=device)
 faq_embeddings = model.encode(question_dataset, normalize_embeddings=True)
 
 
@@ -82,9 +87,5 @@ app = FastAPI()
 
 @app.post("/answering")
 async def qa(input_data: QADataModel):
-    result = process_query(input_data.question)
+    result = process_query((input_data.question+"?").replace("??", "?"))
     return {"answer": result}
-
-
-
-
