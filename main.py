@@ -130,6 +130,14 @@ async def qa(input_data: QADataModel):
     return {"answer": result}
 
 
-@app.post("/test")
-async def test(input_data: QADataModel):
-    return {"answer": "asd"}
+class AnswerScoreDto(BaseModel):
+    query: str
+    answer: str
+    isLike: bool
+
+import model_like_service as ms
+ms.copyDataset()
+@app.post("/rate")
+async def test(input_data: AnswerScoreDto):
+
+    ms.storeRating(input_data.query,input_data.answer,input_data.isLike)

@@ -3,6 +3,6 @@
 
 
 config.ini may be:
-[]
+[SETTINGS]
 env=dev_cpu
 aiModelDisabled=true
