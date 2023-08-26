@@ -1,3 +1,4 @@
+import os
 import string
 import pandas as pd
 import numpy as np
@@ -58,6 +59,7 @@ def get_best(query, K=3):
 
 # device = torch.cuda.current_device() if torch.cuda.is_available() and torch.cuda.mem_get_info()[0] >= 2*1024**3 else -1
 device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
+device = torch.device("cpu")
 
 skipAiTraining = False
 # Проверка существования файла
