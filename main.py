@@ -9,9 +9,13 @@ from fastapi import FastAPI, UploadFile
 from pydantic import BaseModel
 from scipy.spatial.distance import cdist
 from sentence_transformers import SentenceTransformer
+from starlette.responses import FileResponse
+from starlette.staticfiles import StaticFiles
 from transformers import AutoModelForSeq2SeqLM, AutoTokenizer, GenerationConfig, AutoModelForSequenceClassification
 
 import model_like_service as ms
+
+# app = FastAPI()
 
 if __name__ == '__main__':
     uvicorn.run('main:app', workers=1, host="0.0.0.0", port=9000)
@@ -173,3 +177,8 @@ async def rate(input_data: AnswerScoreDto):
     # обработка запроса на лайк и дизлайк
     ms.store_rating(int(input_data.index), input_data.like)
     return "OK"
+
+app.mount("/assets", StaticFiles(directory="front/dist/assets"))
+@app.get("/")
+async def get_html():
+    return FileResponse("front/dist/index.html")

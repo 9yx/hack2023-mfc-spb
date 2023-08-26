@@ -3,7 +3,7 @@ import {DislikeFilled, DislikeOutlined, InboxOutlined, LikeFilled, LikeOutlined}
 import {addResponseMessage, renderCustomComponent, Widget} from "react-chat-widget"
 import 'react-chat-widget/lib/styles.css';
 import './App.css'
-import * as classNames from "classnames";
+import classNames from "classnames";
 import {Badge, Col, ConfigProvider, Descriptions, DescriptionsProps, Layout, Row, Typography, Upload} from "antd";
 import {Spb} from "./spb.tsx";
 
