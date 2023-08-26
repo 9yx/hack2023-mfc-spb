@@ -10,67 +10,65 @@ import {Spb} from "./spb.tsx";
 const items: DescriptionsProps['items'] = [
     {
         key: '1',
-        label: 'Product',
-        children: 'Cloud Database',
+        label: 'Название',
+        children: 'Бот Консултина',
     },
     {
         key: '2',
-        label: 'Billing Mode',
-        children: 'Prepaid',
+        label: 'Система рейтинга',
+        children: 'Вкл.',
     },
     {
         key: '3',
-        label: 'Automatic Renewal',
-        children: 'YES',
+        label: 'Автоматический старт',
+        children: 'Вкл.',
     },
     {
         key: '4',
-        label: 'Order time',
-        children: '2018-04-24 18:00:00',
+        label: 'Время запуска',
+        children: '27.08.2023 03:15',
     },
     {
         key: '5',
-        label: 'Usage Time',
-        children: '2019-04-24 18:00:00',
+        label: 'Время последней перезагрузки',
+        children: '26.08.2023 23:40',
         span: 2,
     },
     {
         key: '6',
-        label: 'Status',
-        children: <Badge status="processing" text="Running" />,
+        label: 'Статус',
+        children: <Badge status="success" text="Работает" />,
         span: 3,
     },
     {
         key: '7',
-        label: 'Negotiated Amount',
-        children: '$80.00',
+        label: 'Загрузка CPU',
+        children: '10%',
     },
     {
         key: '8',
-        label: 'Discount',
-        children: '$20.00',
+        label: 'Потребление ОЗУ',
+        children: '43%',
     },
     {
         key: '9',
-        label: 'Official Receipts',
-        children: '$60.00',
+        label: 'Загрузка GPU',
+        children: '52%',
     },
     {
         key: '10',
-        label: 'Config Info',
+        label: 'Информация о системе',
         children: (
             <>
-                Data disk type: MongoDB
+                Процессор: Intel Core i5-11400
                 <br />
-                Database version: 3.4
+                Объем ОЗУ: 32 Гб
                 <br />
-                Package: dds.mongo.mid
+                Тип системы: Arch Linux
                 <br />
-                Storage space: 10 GB
+                Тип накопителя: SSD
                 <br />
-                Replication factor: 3
-                <br />
-                Region: East China 1
+                Видеокарта: GeForce RTX 3070 Ti
                 <br />
             </>
         ),
