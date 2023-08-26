@@ -9,6 +9,8 @@ import uvicorn
 from fastapi import FastAPI
 from pydantic import BaseModel
 
+if __name__ == '__main__':
+    uvicorn.run('main:app', workers=1)
 
 def generate(prompt):
     data = tokenizer(f"{prompt}", return_tensors="pt").to(model.device)
@@ -51,7 +53,8 @@ def get_best(query, K=3):
 
 
 # device = torch.cuda.current_device() if torch.cuda.is_available() and torch.cuda.mem_get_info()[0] >= 2*1024**3 else -1
-device = torch.device("cpu")
+device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
+# device = torch.device("cpu")
 generation_config = GenerationConfig.from_pretrained("Den4ikAI/FRED-T5-LARGE_text_qa")
 tokenizer = AutoTokenizer.from_pretrained("Den4ikAI/FRED-T5-LARGE_text_qa")
 fred_t5_large = AutoModelForSeq2SeqLM.from_pretrained("Den4ikAI/FRED-T5-LARGE_text_qa").to(device)
@@ -80,5 +83,5 @@ async def qa(input_data: QADataModel):
     return {"answer": result}
 
 
-if __name__ == '__main__':
-    uvicorn.run('main:app', workers=5)
+
+
