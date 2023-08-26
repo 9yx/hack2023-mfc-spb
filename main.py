@@ -22,16 +22,16 @@ def generate(prompt):
     return out.replace('<extra_id_0>', '').strip()
 
 
-def lowercase_text(text):
-    return text.lower()
+def simplify_text(text):
+    text.lower()
 
+    #remove_extra_spaces
+    " ".join(text.split())
+    #line break to spaces
+    text.replace("\n", " ")
 
-def remove_extra_spaces(text):
-    return " ".join(text.split())
-
-
-def remove_punctuation(text):
-    translation_table = str.maketrans("", "", string.punctuation)
+    #punctuation simplifier
+    translation_table = str.maketrans("", "", string.punctuation.replace("-", ""))
     return text.translate(translation_table)
 
 
@@ -42,9 +42,8 @@ def get_best(query, K=3):
     print("\n" + query)
     for c, i in list(zip(distances[ind], ind))[:K]:
         # print(c, question_dataset[i], answer_dataset.loc[i], sep="\t")
-        question = remove_punctuation(
-            lowercase_text(remove_extra_spaces(remove_punctuation(question_dataset[i])))).replace("\n", "")
-        answer = lowercase_text(remove_extra_spaces(remove_punctuation(answer_dataset.loc[i]))).replace("\n", "")
+        question = simplify_text(question_dataset[i])
+        answer =simplify_text(answer_dataset.loc[i])
         text = f'''Вопрос: {question}?  Ответ: {answer}'''
         question = query
         prompt = '''<SC6>Текст: {}\nВопрос: {}\nОтвет: <extra_id_0>'''.format(text, question)
