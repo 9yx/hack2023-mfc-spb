@@ -1,3 +1,4 @@
+import configparser
 import os
 
 import numpy as np
@@ -49,6 +50,7 @@ def get_best(query, K=3):
     print("\n" + query)
     text = ""
     regression = ms.order_with_like(list(zip(distances[ind], ind)))
+    index = None
     for c, i in regression[:K]:
         question = simplify_text(question_dataset[i])
         answer = simplify_text(answer_dataset.loc[i])
@@ -57,16 +59,19 @@ def get_best(query, K=3):
             continue
         text += f'''Вопрос: {question}\nОтвет: {answer}\n'''
 
+        if index is None:
+            index = i
+
     if text == "":
         return "Не знаю ответа"
     prompt = '''<SC6>Текст: {}\nВопрос: {}\nОтвет: <extra_id_0>'''.format(text.strip(), query)
     result = generate(prompt)
-    return result
+    return [index, result]
 
 
 # device = torch.cuda.current_device() if torch.cuda.is_available() and torch.cuda.mem_get_info()[0] >= 2*1024**3 else -1
-#device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
-device = torch.device("cpu")
+device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
+#device = torch.device("cpu")
 
 skipAiTraining = False
 # Проверка существования файла
@@ -131,14 +136,15 @@ async def upload_dataset(file: UploadFile):
 @app.post("/answering")
 async def qa(input_data: QADataModel):
     result = process_query((input_data.question + "?").replace("??", "?"))
-    return {"answer": result}
+    return {"index": str(result[0]), "answer": result[1]}
 
 
 class AnswerScoreDto(BaseModel):
     index: str
-    isLike: bool
+    like: bool
 
 
 @app.post("/rate")
 async def rate(input_data: AnswerScoreDto):
-    ms.storeRating(input_data.index, input_data.isLike)
+    ms.store_rating(int(input_data.index), input_data.like)
+    return "OK"
