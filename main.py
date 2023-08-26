@@ -83,7 +83,6 @@ def get_best(query, K=3):
     return [index, result]
 
 
-
 device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 skipAiTraining = False
 # Проверка существования файла
@@ -155,9 +154,12 @@ async def upload_dataset(file: UploadFile):
 
 @app.post("/answering")
 async def qa(input_data: QADataModel):
-    # обработка запроса на вопрос от пользователя
-    result = process_query((input_data.question + "?").replace("??", "?"))
-    return {"index": str(result[0]), "answer": result[1]}
+    try:
+        # обработка запроса на вопрос от пользователя
+        result = process_query((input_data.question + "?").replace("??", "?"))
+        return {"index": str(result[0]), "answer": result[1]}
+    finally:
+        torch.cuda.empty_cache()
 
 
 # модель для учета лайков и дизлайков

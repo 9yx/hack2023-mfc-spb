@@ -1,0 +1,215 @@
+#root {
+    font-family: "Golos", Arial, Helvetica, sans-serif;
+    height: 100%;
+}
+
+html {
+    height: 100%;
+}
+
+body {
+    padding: 0;
+    margin: 0;
+    height: 100%;
+}
+
+.App {
+    height: 100%;
+}
+
+.rcw-conversation-container {
+    background-color: #F8F5F2;
+    border-radius: 10px;
+    box-shadow: 0 2px 10px 1px #b5b5b5;
+    min-width: 370px;
+    max-width: 370px;
+    position: relative;
+}
+
+.rcw-conversation-container .rcw-header {
+    background-color: #623b2a;
+    color: #fff;
+    border-radius: 10px 10px 0 0;
+    display: flex;
+    flex-direction: column;
+    padding: 10px;
+    text-align: start;
+}
+
+.rcw-conversation-container .rcw-header .rcw-title:before {
+    width: 20px;
+    height: 20px;
+    content: "";
+    background: url("https://mfcto.ru/web/images/footer/footer__logo.svg");
+}
+
+
+.rcw-conversation-container .rcw-title {
+    font-size: 22px;
+    line-height: 1.45455em;
+    margin: 0;
+    padding: 0;
+    display: flex;
+    justify-content: start;
+    align-items: center;
+    gap: 4px;
+}
+
+.rcw-conversation-container > span {
+    font-size: 12px;
+    font-weight: 600;
+    color: #F8F5F2;
+    margin: 0;
+}
+
+
+.rcw-launcher {
+    background-color: #623b2a;
+}
+
+.rcw-response {
+    gap: 4px;
+}
+
+.rcw-response .rcw-message-text {
+    background-color: rgba(98, 59, 42, 0.95);
+    color: white;
+    border-radius: 0 10px 10px 10px;
+    padding: 15px;
+    width: 215px;
+    text-align: left;
+}
+
+.rcw-response .mark {
+    width: 100%;
+    right: 4px;
+    display: flex;
+    justify-content: end;
+    gap: 8px;
+}
+
+.rcw-response .mark .like {
+    color: green;
+    cursor: pointer;
+    padding: 2px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.rcw-response .mark .like:hover {
+    border-radius: 4px;
+    color: black;
+    background: rgb(234, 232, 229);
+}
+
+.rcw-response .mark .like.active {
+    color: green;
+}
+
+.rcw-response .mark .dislike {
+    color: red;
+    cursor: pointer;
+    padding: 2px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.rcw-response .mark .dislike:hover {
+    border-radius: 4px;
+    color: black;
+    background: rgb(234, 232, 229);
+}
+
+.rcw-response .mark .dislike.active {
+    color: red;
+}
+
+.rcw-client .rcw-message-text {
+    background-color: rgb(195, 147, 103);
+    color: white;
+    border-radius: 10px 0 10px 10px;
+    padding: 15px;
+    max-width: 215px;
+    text-align: left;
+}
+
+.rcw-picker-btn {
+    display: none;
+}
+
+.rcw-messages-container {
+    background-color: #F8F5F2;
+    height: 600vh;
+    margin-top: 10px;
+}
+
+.rcw-messages-container::-webkit-scrollbar {
+    width: 4px;
+}
+
+.rcw-messages-container::-webkit-scrollbar-track {
+    background: #F8F5F2;
+    border-radius: 100px;
+}
+
+.rcw-messages-container::-webkit-scrollbar-thumb {
+    background: rgba(98, 59, 42, 0.2);
+    border-radius: 100px;
+}
+
+.rcw-messages-container::-webkit-scrollbar-thumb:hover {
+    background: rgba(98, 59, 42, 0.3);
+}
+
+.rcw-sender {
+    background-color: #623b2a;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 8px;
+}
+
+.rcw-sender .rcw-new-message {
+    background-color: #F8F5F2;
+}
+
+.rcw-sender .rcw-send {
+    background-color: #623b2a;
+}
+
+.rcw-launcher .rcw-badge {
+    background-color: #E04E39;
+    top: -10px;
+    right: -10px;
+}
+
+.rcw-input {
+    font-size: 16px;
+    cursor: pointer;
+}
+
+.rcw-input:focus {
+    cursor: default;
+}
+
+.header-page {
+    background-color: #f9f7f7;
+    border-bottom: 1px solid #623b2a;;
+    color: #623b2a;
+    height: auto;
+}
+
+.header-page .title {
+    color: #623b2a;
+}
+
+.content-page {
+    background-color: #f9f7f7;
+    padding: 10px 0;
+}
+
+.content-page :not(:last-child) {
+    margin-bottom: 8px;
+}
