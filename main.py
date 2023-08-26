@@ -70,7 +70,7 @@ def get_best(query, K=3):
         answers.append(answer)
 
     if len(answers) == 0:
-        return [-1, "Не знаю ответа"]
+        return [-1, "Я не смог найти ответ. Переформулируйте свой вопрос."]
 
     features = cross_encoder_tokenizer(queryes, answers, padding=True, truncation=True, return_tensors="pt")
     cross_encoder_model.eval()
