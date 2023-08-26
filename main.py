@@ -2,6 +2,7 @@ import os
 import string
 import pandas as pd
 import numpy as np
+import model_like_service as ms
 from sentence_transformers import SentenceTransformer
 from scipy.spatial.distance import cdist
 import torch
@@ -45,7 +46,10 @@ def get_best(query, K=3):
     distances = cdist(query_embedding, faq_embeddings, "cosine")[0]
     ind = np.argsort(distances, axis=0)
     print("\n" + query)
-    for c, i in list(zip(distances[ind], ind))[:K]:
+
+    regression = ms.order_with_like(list(zip(distances[ind], ind)))
+
+    for c, i in regression[:K]:
         if c > 0.03:
             return "Не знаю ответа"
         question = simplify_text(question_dataset[i])
@@ -131,13 +135,10 @@ async def qa(input_data: QADataModel):
 
 
 class AnswerScoreDto(BaseModel):
-    query: str
-    answer: str
+    index: str
     isLike: bool
 
-import model_like_service as ms
 ms.copyDataset()
 @app.post("/rate")
-async def test(input_data: AnswerScoreDto):
-
-    ms.storeRating(input_data.query,input_data.answer,input_data.isLike)
+async def rate(input_data: AnswerScoreDto):
+    ms.storeRating(input_data.index, input_data.isLike)

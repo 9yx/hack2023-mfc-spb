@@ -1,30 +1,14 @@
-import shutil
+likes = {}
+weight = 0.05
+def store_rating(index, rate):
+    like_count = like.get(index, 0)
+    likes[index] = like_count + 1 if rate else like_count - 1
 
-import pandas as pd
+def order_with_like(regression):
+    for i in range(len(regression)):
+        index = regression[i][1]
+        index_like = likes[index]
+        if index_like is not None:
+            regression[i][0] = regression[i][0] + weight * index_like
 
-
-def copyDataset():
-    original_file = './train_dataset_Датасет.xlsx'
-    copy_file = './train_dataset_Датасетcopy.xlsx'
-    # Копирование файла
-    shutil.copyfile(original_file, copy_file)
-    print('Файл успешно скопирован.')
-
-
-
-def storeRating(query, answer, rate):
-
-    data = {'QUESTION': [query], 'ANSWER': [answer], 'Rating': [rate]}
-    df = pd.DataFrame(data)
-
-    try:
-        existing_data = pd.read_excel('./train_dataset_Датасетcopy.xlsx')
-        df = pd.concat([existing_data, df], ignore_index=True)
-    except FileNotFoundError:
-        print("file not found")
-        pass
-
-
-    df.to_excel('train_dataset_Датасетcopy.xlsx', index=False)
-
-    print("Данные успешно добавлены в файл Excel.")
+    return sorted(regression)
