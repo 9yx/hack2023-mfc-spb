@@ -199,6 +199,7 @@ body {
     border-bottom: 1px solid #623b2a;;
     color: #623b2a;
     height: auto;
+    padding: 10px;
 }
 
 .header-page .title {
@@ -207,7 +208,7 @@ body {
 
 .content-page {
     background-color: #f9f7f7;
-    padding: 10px 0;
+    padding: 10px;
 }
 
 .content-page :not(:last-child) {

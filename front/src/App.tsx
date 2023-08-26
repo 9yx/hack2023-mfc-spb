@@ -175,7 +175,7 @@ function App() {
                 <Layout style={{height: "100%"}}>
                     <Layout.Header className={'header-page'}>
                         <Row justify={"center"}>
-                            <Col span={18}>
+                            <Col lg={24} xl={18}>
                                 <Row justify={"space-between"}>
                                     <Col span={12}>
                                         <Typography.Title className={"title"} level={3}>
@@ -193,12 +193,12 @@ function App() {
                     </Layout.Header>
                     <Layout.Content className={'content-page'}>
                         <Row justify={"center"}>
-                            <Col span={18}>
+                            <Col lg={24} xl={18}>
                                 <Descriptions title="Статистика" bordered items={items} />
                             </Col>
                         </Row>
                        <Row justify={"center"}>
-                           <Col span={18}>
+                           <Col lg={24} xl={18}>
                                <Upload.Dragger
                                    action={"/upload_dataset"}
                                >
