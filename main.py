@@ -10,7 +10,7 @@ from fastapi import FastAPI
 from pydantic import BaseModel
 
 if __name__ == '__main__':
-    uvicorn.run('main:app', workers=1)
+    uvicorn.run('main:app', workers=1, host="0.0.0.0",  port=9000)
 
 def generate(prompt):
     data = tokenizer(f"{prompt}", return_tensors="pt").to(model.device)
@@ -23,16 +23,19 @@ def generate(prompt):
 
 
 def simplify_text(text):
-    text.lower()
+    text = text.lower()
 
     #remove_extra_spaces
-    " ".join(text.split())
+    text = " ".join(text.split())
     #line break to spaces
-    text.replace("\n", " ")
+    text = text.replace("\n", " ")
+
+    text = text.replace(";", ",")
+    text = text.replace("- ", "-")
 
     #punctuation simplifier
-    translation_table = str.maketrans("", "", string.punctuation.replace("-", ""))
-    return text.translate(translation_table)
+    # translation_table = str.maketrans("", "", string.punctuation.replace("-", ""))
+    return text
 
 
 def get_best(query, K=3):
@@ -41,12 +44,13 @@ def get_best(query, K=3):
     ind = np.argsort(distances, axis=0)
     print("\n" + query)
     for c, i in list(zip(distances[ind], ind))[:K]:
-        # print(c, question_dataset[i], answer_dataset.loc[i], sep="\t")
+        if c > 0.03:
+            return "Не знаю ответа"
         question = simplify_text(question_dataset[i])
         answer =simplify_text(answer_dataset.loc[i])
+        print(c, question, answer)
         text = f'''Вопрос: {question}?  Ответ: {answer}'''
-        question = query
-        prompt = '''<SC6>Текст: {}\nВопрос: {}\nОтвет: <extra_id_0>'''.format(text, question)
+        prompt = '''<SC6>Текст: {}\nВопрос: {}\nОтвет: <extra_id_0>'''.format(text, query)
         result = generate(prompt)
         return result
 
