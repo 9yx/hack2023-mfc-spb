@@ -32,34 +32,35 @@ def generate(prompt):
 
 
 def simplify_text(text):
+    # Очистка входного датасета
     text = text.lower()
 
-    # remove_extra_spaces
+    # удаление лишних пробелов
     text = " ".join(text.split())
-    # line break to spaces
+    # замена символов
     text = text.replace("\n", " ")
-
     text = text.replace(";", ",")
     text = text.replace("- ", "-")
-
-    # punctuation simplifier
-    # translation_table = str.maketrans("", "", string.punctuation.replace("-", ""))
     return text
 
 
 def get_best(query, K=3):
+    # Этап Retrieval, семантичесткий поиск
     query_embedding = model.encode([query])
     distances = cdist(query_embedding, faq_embeddings, "cosine")[0]
     ind = np.argsort(distances, axis=0)
     print("\n" + query)
     text = ""
-    regression = ms.order_with_like(list(zip(distances[ind], ind)))
+    # с учетом лайков и дизлайков
+    semantic_search = ms.distance_with_likes(list(zip(distances[ind], ind)))
     index = None
 
     queryes = []
     questions = []
     answers = []
-    for c, i in regression[:K]:
+
+    # подготовка данных для семантического ранжирования
+    for c, i in semantic_search[:K]:
         question = simplify_text(question_dataset[i])
         answer = simplify_text(answer_dataset.loc[i])
         print(c, question, answer)
@@ -69,9 +70,11 @@ def get_best(query, K=3):
         queryes.append(query)
         answers.append(answer)
 
+    # обработка в случаи фильтрации пороговом фильтром всех данных
     if len(answers) == 0:
         return [-1, "Я не смог найти ответ. Переформулируйте свой вопрос."]
 
+    # Этап Rerank, семантическое ранжирование
     features = cross_encoder_tokenizer(queryes, answers, padding=True, truncation=True, return_tensors="pt")
     cross_encoder_model.eval()
     with torch.no_grad():
@@ -84,10 +87,7 @@ def get_best(query, K=3):
     return [index, result]
 
 
-# device = torch.cuda.current_device() if torch.cuda.is_available() and torch.cuda.mem_get_info()[0] >= 2*1024**3 else -1
 device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
-#device = torch.device("cpu")
-
 skipAiTraining = False
 # Проверка существования файла
 if os.path.exists('config.ini'):
@@ -112,6 +112,7 @@ faq_embeddings = None
 cross_encoder_model = None
 cross_encoder_tokenizer = None
 
+# настройка глобальных переменных
 if not skipAiTraining:
     generation_config = GenerationConfig.from_pretrained("Den4ikAI/FRED-T5-LARGE_text_qa")
     tokenizer = AutoTokenizer.from_pretrained("Den4ikAI/FRED-T5-LARGE_text_qa")
@@ -127,11 +128,11 @@ if not skipAiTraining:
     cross_encoder_model = AutoModelForSequenceClassification.from_pretrained('cross-encoder/mmarco-mMiniLMv2-L12-H384-v1')
     cross_encoder_tokenizer = AutoTokenizer.from_pretrained('cross-encoder/mmarco-mMiniLMv2-L12-H384-v1')
 
-
+# поиск 3 лучших результатов по базе знаний
 def process_query(query):
     return get_best(query, 3)
 
-
+# модель для запроса ответа
 class QADataModel(BaseModel):
     question: str
 
@@ -141,6 +142,7 @@ app = FastAPI()
 
 @app.post("/upload_dataset")
 async def upload_dataset(file: UploadFile):
+    # обработка запроса обновления датасета
     global question_dataset
     global answer_dataset
     global faq_embeddings
@@ -157,13 +159,14 @@ async def upload_dataset(file: UploadFile):
 @app.post("/answering")
 async def qa(input_data: QADataModel):
     try:
+        # обработка запроса на вопрос от пользователя
         result = process_query((input_data.question + "?").replace("??", "?"))
         return {"index": str(result[0]), "answer": result[1]}
     finally:
         torch.cuda.empty_cache()
 
 
-
+# модель для учета лайков и дизлайков
 class AnswerScoreDto(BaseModel):
     index: str
     like: bool
@@ -171,6 +174,7 @@ class AnswerScoreDto(BaseModel):
 
 @app.post("/rate")
 async def rate(input_data: AnswerScoreDto):
+    # обработка запроса на лайк и дизлайк
     ms.store_rating(int(input_data.index), input_data.like)
     return "OK"
 
