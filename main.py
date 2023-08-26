@@ -1,15 +1,16 @@
 import os
-import string
-import pandas as pd
+
 import numpy as np
-import model_like_service as ms
-from sentence_transformers import SentenceTransformer
-from scipy.spatial.distance import cdist
+import pandas as pd
 import torch
-from transformers import AutoModelForSeq2SeqLM, AutoTokenizer, GenerationConfig
 import uvicorn
 from fastapi import FastAPI, UploadFile
 from pydantic import BaseModel
+from scipy.spatial.distance import cdist
+from sentence_transformers import SentenceTransformer
+from transformers import AutoModelForSeq2SeqLM, AutoTokenizer, GenerationConfig
+
+import model_like_service as ms
 
 if __name__ == '__main__':
     uvicorn.run('main:app', workers=1, host="0.0.0.0", port=9000)
@@ -46,7 +47,7 @@ def get_best(query, K=3):
     distances = cdist(query_embedding, faq_embeddings, "cosine")[0]
     ind = np.argsort(distances, axis=0)
     print("\n" + query)
-    text =""
+    text = ""
     regression = ms.order_with_like(list(zip(distances[ind], ind)))
     for c, i in regression[:K]:
         question = simplify_text(question_dataset[i])
@@ -54,7 +55,7 @@ def get_best(query, K=3):
         print(c, question, answer)
         if c > 0.1:
             continue
-        text +=  f'''Вопрос: {question}\nОтвет: {answer}\n'''
+        text += f'''Вопрос: {question}\nОтвет: {answer}\n'''
 
     if text == "":
         return "Не знаю ответа"
@@ -64,7 +65,7 @@ def get_best(query, K=3):
 
 
 # device = torch.cuda.current_device() if torch.cuda.is_available() and torch.cuda.mem_get_info()[0] >= 2*1024**3 else -1
-device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
+#device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 device = torch.device("cpu")
 
 skipAiTraining = False
@@ -80,18 +81,6 @@ if os.path.exists('config.ini'):
         device = torch.device("cpu")
     if config.get('SETTINGS', 'aiModelDisabled'):
         skipAiTraining = True
-
-# device = torch.device("cpu")
-generation_config = GenerationConfig.from_pretrained("Den4ikAI/FRED-T5-LARGE_text_qa")
-tokenizer = AutoTokenizer.from_pretrained("Den4ikAI/FRED-T5-LARGE_text_qa")
-fred_t5_large = AutoModelForSeq2SeqLM.from_pretrained("Den4ikAI/FRED-T5-LARGE_text_qa").to(device)
-fred_t5_large.eval()
-question_dataset = pd.read_excel('train_dataset_Датасет.xlsx', 'Лист1')['QUESTION'].astype(str).tolist()  # [:-50]
-answer_dataset = pd.read_excel('train_dataset_Датасет.xlsx', 'Лист1')['ANSWER'].astype(str)
-model = SentenceTransformer('intfloat/multilingual-e5-large', device=device)
-#model = SentenceTransformer('sentence-transformers/quora-distilbert-multilingual', device=device)
-faq_embeddings = model.encode(question_dataset, normalize_embeddings=True)
-
 
 generation_config = None
 tokenizer = None
@@ -141,7 +130,7 @@ async def upload_dataset(file: UploadFile):
 
 @app.post("/answering")
 async def qa(input_data: QADataModel):
-    result = process_query((input_data.question+"?").replace("??", "?"))
+    result = process_query((input_data.question + "?").replace("??", "?"))
     return {"answer": result}
 
 
@@ -149,7 +138,7 @@ class AnswerScoreDto(BaseModel):
     index: str
     isLike: bool
 
-ms.copyDataset()
+
 @app.post("/rate")
 async def rate(input_data: AnswerScoreDto):
     ms.storeRating(input_data.index, input_data.isLike)
