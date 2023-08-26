@@ -1,8 +1,4 @@
-import os
 import string
-import subprocess
-import configparser
-
 import pandas as pd
 import numpy as np
 from sentence_transformers import SentenceTransformer
@@ -10,11 +6,12 @@ from scipy.spatial.distance import cdist
 import torch
 from transformers import AutoModelForSeq2SeqLM, AutoTokenizer, GenerationConfig
 import uvicorn
-from fastapi import FastAPI
+from fastapi import FastAPI, UploadFile
 from pydantic import BaseModel
 
 if __name__ == '__main__':
-    uvicorn.run('main:app', workers=1, host="0.0.0.0",  port=9000)
+    uvicorn.run('main:app', workers=1, host="0.0.0.0", port=9000)
+
 
 def generate(prompt):
     data = tokenizer(f"{prompt}", return_tensors="pt").to(model.device)
@@ -29,15 +26,15 @@ def generate(prompt):
 def simplify_text(text):
     text = text.lower()
 
-    #remove_extra_spaces
+    # remove_extra_spaces
     text = " ".join(text.split())
-    #line break to spaces
+    # line break to spaces
     text = text.replace("\n", " ")
 
     text = text.replace(";", ",")
     text = text.replace("- ", "-")
 
-    #punctuation simplifier
+    # punctuation simplifier
     # translation_table = str.maketrans("", "", string.punctuation.replace("-", ""))
     return text
 
@@ -51,7 +48,7 @@ def get_best(query, K=3):
         if c > 0.03:
             return "Не знаю ответа"
         question = simplify_text(question_dataset[i])
-        answer =simplify_text(answer_dataset.loc[i])
+        answer = simplify_text(answer_dataset.loc[i])
         print(c, question, answer)
         text = f'''Вопрос: {question}?  Ответ: {answer}'''
         prompt = '''<SC6>Текст: {}\nВопрос: {}\nОтвет: <extra_id_0>'''.format(text, query)
@@ -73,7 +70,7 @@ if os.path.exists('config.ini'):
     # Чтение значения свойства property1
     if config.get('SETTINGS', 'env'):
         device = torch.device("cpu")
-    if  config.get('SETTINGS', 'aiModelDisabled'):
+    if config.get('SETTINGS', 'aiModelDisabled'):
         skipAiTraining = True
 
 # device = torch.device("cpu")
@@ -99,8 +96,6 @@ if not skipAiTraining:
     faq_embeddings = model.encode(question_dataset, normalize_embeddings=True)
 
 
-
-
 def process_query(query):
     return get_best(query, 1)
 
@@ -112,8 +107,19 @@ class QADataModel(BaseModel):
 app = FastAPI()
 
 
+@app.post("/upload_dataset")
+async def upload_dataset(file: UploadFile):
+    global question_dataset
+    global answer_dataset
+    global faq_embeddings
+    contents = await file.read()
 
+    with open(f"train_dataset_Датасет.xlsx", "wb") as f:
+        f.write(contents)
 
+    question_dataset = pd.read_excel('train_dataset_Датасет.xlsx', 'Лист1')['QUESTION'].astype(str).tolist()
+    answer_dataset = pd.read_excel('train_dataset_Датасет.xlsx', 'Лист1')['ANSWER'].astype(str)
+    faq_embeddings = model.encode(question_dataset, normalize_embeddings=True)
 
 
 @app.post("/answering")
@@ -121,10 +127,7 @@ async def qa(input_data: QADataModel):
     result = process_query(input_data.question)
     return {"answer": result}
 
+
 @app.post("/test")
 async def test(input_data: QADataModel):
-
     return {"answer": "asd"}
-
-
-
