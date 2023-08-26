@@ -45,7 +45,8 @@ def get_best(query, K=3):
     ind = np.argsort(distances, axis=0)
     print("\n" + query)
     text =""
-    for c, i in list(zip(distances[ind], ind))[:K]:
+    regression = list(zip(distances[ind], ind))
+    for c, i in regression[:K]:
         question = simplify_text(question_dataset[i])
         answer = simplify_text(answer_dataset.loc[i])
         print(c, question, answer)
