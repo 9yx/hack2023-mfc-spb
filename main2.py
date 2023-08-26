@@ -19,16 +19,16 @@ def generate(prompt):
     return out.replace('<extra_id_0>', '').strip()
 
 
-def lowercase_text(text):
-    return text.lower()
+def simplify_text(text):
+    text.lower()
 
+    #remove_extra_spaces
+    " ".join(text.split())
+    #line break to spaces
+    text.replace("\n", " ")
 
-def remove_extra_spaces(text):
-    return " ".join(text.split())
-
-
-def remove_punctuation(text):
-    translation_table = str.maketrans("", "", string.punctuation)
+    #punctuation simplifier
+    translation_table = str.maketrans("", "", string.punctuation.replace("-", ""))
     return text.translate(translation_table)
 
 
@@ -39,13 +39,14 @@ def get_best(query, K=3):
     print("\n" + query)
     for c, i in list(zip(distances[ind], ind))[:K]:
         # print(c, question_dataset[i], answer_dataset.loc[i], sep="\t")
-        question = remove_punctuation(lowercase_text(remove_extra_spaces(remove_punctuation(question_dataset[i])))).replace("\n", "")
-        answer = lowercase_text(remove_extra_spaces(remove_punctuation(answer_dataset.loc[i]))).replace("\n", "")
+        question = simplify_text(question_dataset[i])
+        answer = simplify_text(answer_dataset.loc[i])
         text = f'''Вопрос: {question}?  Ответ: {answer}'''
         question = query
         prompt = '''<SC6>Текст: {}\nВопрос: {}\nОтвет: <extra_id_0>'''.format(text, question)
         print(prompt)
-        print(generate(prompt))
+        tmpAns=generate(prompt)
+        print(tmpAns)
 
 
 if __name__ == '__main__':
@@ -60,4 +61,4 @@ if __name__ == '__main__':
     # model = SentenceTransformer('intfloat/multilingual-e5-large', device=device)
     model = SentenceTransformer('sentence-transformers/quora-distilbert-multilingual', device=device)
     faq_embeddings = model.encode(question_dataset, normalize_embeddings=True)
-    get_best("Какие условия в услуге 33?", 1)
+    get_best("""На какую сумму может рассчитывать заявитель при оформлении услуги "Предоставлять меру социальной поддержки детям-сиротам, детям, оставшимся без попечения родителей, лицам из числа детей-сирот и детей, оставшихся без попечения родителей, в виде денежной компенсации стоимости путевки в организации отдыха детей и молодежи и их оздоровления в случае самостоятельного приобретения путевок в организации отдыха детей и молодежи и их оздоровления опекунами (попечителями), приемными родителями детей-сирот и детей, оставшихся без попечения родителей, или лицами из числа детей-сирот и детей, оставшихся без попечения родителей"?""", 1)
