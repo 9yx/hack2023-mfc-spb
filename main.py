@@ -1,4 +1,8 @@
+import os
 import string
+import subprocess
+import configparser
+
 import pandas as pd
 import numpy as np
 from sentence_transformers import SentenceTransformer
@@ -53,16 +57,44 @@ def get_best(query, K=3):
 
 # device = torch.cuda.current_device() if torch.cuda.is_available() and torch.cuda.mem_get_info()[0] >= 2*1024**3 else -1
 device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
+
+skipAiTraining = False
+# Проверка существования файла
+if os.path.exists('config.ini'):
+    # Создание объекта ConfigParser
+    config = configparser.ConfigParser()
+    # Чтение файла конфигурации
+    config.read('config.ini')
+
+    # Чтение значения свойства property1
+    if config.get('SETTINGS', 'env'):
+        device = torch.device("cpu")
+    if  config.get('SETTINGS', 'aiModelDisabled'):
+        skipAiTraining = True
+
 # device = torch.device("cpu")
-generation_config = GenerationConfig.from_pretrained("Den4ikAI/FRED-T5-LARGE_text_qa")
-tokenizer = AutoTokenizer.from_pretrained("Den4ikAI/FRED-T5-LARGE_text_qa")
-fred_t5_large = AutoModelForSeq2SeqLM.from_pretrained("Den4ikAI/FRED-T5-LARGE_text_qa").to(device)
-fred_t5_large.eval()
-question_dataset = pd.read_excel('train_dataset_Датасет.xlsx', 'Лист1')['QUESTION'].astype(str).tolist()  # [:-50]
-answer_dataset = pd.read_excel('train_dataset_Датасет.xlsx', 'Лист1')['ANSWER'].astype(str)
-# model = SentenceTransformer('intfloat/multilingual-e5-large', device=device)
-model = SentenceTransformer('sentence-transformers/quora-distilbert-multilingual', device=device)
-faq_embeddings = model.encode(question_dataset, normalize_embeddings=True)
+
+
+generation_config = None
+tokenizer = None
+fred_t5_large = None
+question_dataset = None
+answer_dataset = None
+model = None
+faq_embeddings = None
+
+if not skipAiTraining:
+    generation_config = GenerationConfig.from_pretrained("Den4ikAI/FRED-T5-LARGE_text_qa")
+    tokenizer = AutoTokenizer.from_pretrained("Den4ikAI/FRED-T5-LARGE_text_qa")
+    fred_t5_large = AutoModelForSeq2SeqLM.from_pretrained("Den4ikAI/FRED-T5-LARGE_text_qa").to(device)
+    fred_t5_large.eval()
+    question_dataset = pd.read_excel('train_dataset_Датасет.xlsx', 'Лист1')['QUESTION'].astype(str).tolist()
+    answer_dataset = pd.read_excel('train_dataset_Датасет.xlsx', 'Лист1')['ANSWER'].astype(str)
+    # model = SentenceTransformer('intfloat/multilingual-e5-large', device=device)
+    model = SentenceTransformer('sentence-transformers/quora-distilbert-multilingual', device=device)
+    faq_embeddings = model.encode(question_dataset, normalize_embeddings=True)
+
+
 
 
 def process_query(query):
@@ -76,11 +108,19 @@ class QADataModel(BaseModel):
 app = FastAPI()
 
 
+
+
+
+
 @app.post("/answering")
 async def qa(input_data: QADataModel):
     result = process_query(input_data.question)
     return {"answer": result}
 
+@app.post("/test")
+async def test(input_data: QADataModel):
+
+    return {"answer": "asd"}
 
 
 
