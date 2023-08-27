@@ -1,5 +1,6 @@
 import configparser
 import os
+import re
 
 import numpy as np
 import pandas as pd
@@ -14,8 +15,6 @@ from starlette.staticfiles import StaticFiles
 from transformers import AutoModelForSeq2SeqLM, AutoTokenizer, GenerationConfig, AutoModelForSequenceClassification
 
 import model_like_service as ms
-
-# app = FastAPI()
 
 if __name__ == '__main__':
     uvicorn.run('main:app', workers=1, host="0.0.0.0", port=9000)
@@ -59,6 +58,9 @@ def get_best(query, K=3):
     questions = []
     answers = []
 
+    pattern = r"услуг.{,4}(\d*)"
+    match_usluga = re.search(pattern, query)
+
     # подготовка данных для семантического ранжирования
     for c, i in semantic_search[:K]:
         question = simplify_text(question_dataset[i])
@@ -66,6 +68,15 @@ def get_best(query, K=3):
         print(c, question, answer)
         if c > 0.1:
             continue
+
+        if match_usluga:
+            # Получение номера услуги если оно есть
+            usluga_number = match_usluga.group(1)
+            find_pattern = r"\b{}\b".format(usluga_number)
+            find_match = re.search(find_pattern, question)
+            if not find_match:
+                continue
+
         questions.append(question)
         queryes.append(query)
         answers.append(answer)
@@ -125,12 +136,15 @@ if not skipAiTraining:
     #model = SentenceTransformer('sentence-transformers/quora-distilbert-multilingual', device=device)
     faq_embeddings = model.encode(question_dataset, normalize_embeddings=True)
 
-    cross_encoder_model = AutoModelForSequenceClassification.from_pretrained('cross-encoder/mmarco-mMiniLMv2-L12-H384-v1')
+    cross_encoder_model = AutoModelForSequenceClassification.from_pretrained(
+        'cross-encoder/mmarco-mMiniLMv2-L12-H384-v1')
     cross_encoder_tokenizer = AutoTokenizer.from_pretrained('cross-encoder/mmarco-mMiniLMv2-L12-H384-v1')
+
 
 # поиск 3 лучших результатов по базе знаний
 def process_query(query):
     return get_best(query, 3)
+
 
 # модель для запроса ответа
 class QADataModel(BaseModel):
@@ -178,7 +192,10 @@ async def rate(input_data: AnswerScoreDto):
     ms.store_rating(int(input_data.index), input_data.like)
     return "OK"
 
+
 app.mount("/assets", StaticFiles(directory="front/dist/assets"))
+
+
 @app.get("/")
 async def get_html():
     return FileResponse("front/dist/index.html")
