@@ -64,7 +64,7 @@ def get_best(query, K=3):
         question = simplify_text(question_dataset[i])
         answer = simplify_text(answer_dataset.loc[i])
         print(c, question, answer)
-        if c > 0.035:
+        if c > 0.1:
             continue
         questions.append(question)
         queryes.append(query)
@@ -120,9 +120,9 @@ if not skipAiTraining:
     fred_t5_large.eval()
     question_dataset = pd.read_excel('train_dataset_Датасет.xlsx', 'Лист1')['QUESTION'].astype(str).tolist()
     answer_dataset = pd.read_excel('train_dataset_Датасет.xlsx', 'Лист1')['ANSWER'].astype(str)
-    # model = SentenceTransformer('intfloat/multilingual-e5-large', device=device)
+    model = SentenceTransformer('intfloat/multilingual-e5-large', device=device)
     # model = SentenceTransformer('Den4ikAI/sbert_large_mt_ru_retriever', device=device)
-    model = SentenceTransformer('sentence-transformers/quora-distilbert-multilingual', device=device)
+    #model = SentenceTransformer('sentence-transformers/quora-distilbert-multilingual', device=device)
     faq_embeddings = model.encode(question_dataset, normalize_embeddings=True)
 
     cross_encoder_model = AutoModelForSequenceClassification.from_pretrained('cross-encoder/mmarco-mMiniLMv2-L12-H384-v1')
