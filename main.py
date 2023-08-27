@@ -40,6 +40,8 @@ def simplify_text(text):
     text = text.replace("\n", " ")
     text = text.replace(";", ",")
     text = text.replace("- ", "-")
+    text = text.replace(". или", ", или")
+    text = text.replace(". и", ", и")
     return text
 
 
@@ -80,6 +82,9 @@ def get_best(query, K=3):
         questions.append(question)
         queryes.append(query)
         answers.append(answer)
+
+        if c < 0.01:
+            break
 
     # обработка в случаи фильтрации пороговом фильтром всех данных
     if len(answers) == 0:
