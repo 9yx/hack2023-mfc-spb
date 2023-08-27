@@ -199,6 +199,7 @@ body {
     border-bottom: 1px solid #623b2a;;
     color: #623b2a;
     height: auto;
+    padding: 10px;
 }
 
 .header-page .title {
@@ -207,9 +208,75 @@ body {
 
 .content-page {
     background-color: #f9f7f7;
-    padding: 10px 0;
+    padding: 10px;
 }
 
 .content-page :not(:last-child) {
     margin-bottom: 8px;
+}
+
+.rcw-conversation-container .rcw-close-button {
+    background: #623b2a;
+}
+
+@media(max-width: 992px){
+    .rcw-conversation-container {
+        max-width: 100vw;
+    }
+
+    .rcw-conversation-container .rcw-header {
+        border-radius: 0;
+    }
+
+    .rcw-launcher {
+        top: 50%;
+        left: 50%;
+        margin-top: -30px; /* Negative half of height. */
+        margin-left: -30px; /* Negative half of width. */
+    }
+
+    .ant-layout {
+        display: none;
+    }
+}
+@media(max-width: 768px){
+    .rcw-conversation-container {
+        max-width: 100vw;
+    }
+
+    .rcw-conversation-container .rcw-header {
+        border-radius: 0;
+    }
+
+    .rcw-launcher {
+        top: 50%;
+        left: 50%;
+        margin-top: -30px; /* Negative half of height. */
+        margin-left: -30px; /* Negative half of width. */
+    }
+
+    .ant-layout {
+        display: none;
+    }
+}
+
+@media(max-width: 500px){
+    .rcw-conversation-container {
+        max-width: 100vw;
+    }
+
+    .rcw-conversation-container .rcw-header {
+        border-radius: 0;
+    }
+
+    .rcw-launcher {
+        top: 50%;
+        left: 50%;
+        margin-top: -30px; /* Negative half of height. */
+        margin-left: -30px; /* Negative half of width. */
+    }
+
+    .ant-layout {
+        display: none;
+    }
 }

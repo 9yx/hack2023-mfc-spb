@@ -83,7 +83,7 @@ def get_best(query, K=3):
 
     # обработка в случаи фильтрации пороговом фильтром всех данных
     if len(answers) == 0:
-        return [-1, "Не знаю ответа"]
+        return [-1, "Я не смог найти ответ. Переформулируйте свой вопрос."]
 
     # Этап Rerank, семантическое ранжирование
     features = cross_encoder_tokenizer(queryes, answers, padding=True, truncation=True, return_tensors="pt")
